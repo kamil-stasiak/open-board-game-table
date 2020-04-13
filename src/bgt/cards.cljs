@@ -1,7 +1,8 @@
 (ns bgt.cards)
 
 (def base-card
-  {:active :back
+  {:id "base"
+   :active :back
    :selected? false
    :front
    {:img "https://upload.wikimedia.org/wikipedia/en/3/3b/Pokemon_Trading_Card_Game_cardback.jpg"}
@@ -9,7 +10,8 @@
    {:img "http://abload.de/img/cardyback1fprd.jpg"}})
 
 (def splendor-1
-  {:active :back
+  {:id "id1"
+   :active :back
    :selected? false
    :front
    {:img "https://upload.wikimedia.org/wikipedia/en/3/3b/Pokemon_Trading_Card_Game_cardback.jpg"}
@@ -17,7 +19,8 @@
    {:img "http://abload.de/img/cardgbacktqjy4.jpg"}})
 
 (def splendor-2
-  {:active :back
+  {:id "id2"
+   :active :back
    :selected? false
    :front
    {:img "https://upload.wikimedia.org/wikipedia/en/3/3b/Pokemon_Trading_Card_Game_cardback.jpg"}
@@ -25,7 +28,8 @@
    {:img "http://abload.de/img/cardyback1fprd.jpg"}})
 
 (def splendor-3
-  {:active :back
+  {:id "id3"
+   :active :back
    :selected? false
    :front
    {:img "https://upload.wikimedia.org/wikipedia/en/3/3b/Pokemon_Trading_Card_Game_cardback.jpg"}

@@ -29,7 +29,8 @@
 (defn card-component [{:keys [active selected?] :as card} on-click]
   (let [image (:img (active card))]
     [:div.card
-     {:on-click on-click}
+     {:style {:border "1px dotted #a3a3a3"}
+      :on-click on-click}
      [:img {:src image :height "198px" :width "136px"}]]))
 
 (defn field-component [name cards deck-name]
@@ -44,24 +45,28 @@
       :justify-content "space-evenly"
       :align-items "center"}}
     (for [[index element] (map-indexed vector cards)]
-      ^{:key index} [card-component element #()])]])
+      ^{:key index}
+      [card-component
+       element
+       #(println (str "Clicked: " deck-name " " (:id element)))])]])
 
 (defn deck-component [name cards deck-name]
-  [:div
+  [:div {:style {:border "1px solid #a3a3a3"}}
    [:h3 (str name " (" (count cards) ")")]
    [:div.deck-cards
     {:style
      {:border "1px solid #a3a3a3"
       :width "200px"
-      :height "250px"
+      :height "300px"
       :display "flex"
       :justify-content "space-around"
       :align-items "center"}}
     (when (first cards)
-      [card-component (first cards)
-       #(println (str "Clicked: " deck-name " " 0))])]])
+      [card-component
+       (first cards)
+       #(println (str "Clicked: " deck-name " " (:id (first cards))))])]])
 
-(defn stack-component [name cards deck-name]
+(defn stack-component [cards name deck-name]
   [:div
    {:style
     {:border "1px solid #a3a3a3"
@@ -86,34 +91,21 @@
         {:style
          {:position "absolute"
           :top (str (* index 30) "px")}}
-        ;; FIX ME broken index when reversed
-        [card-component card #(println (str "Clicked: " deck-name " " index))]])]]])
+        [card-component card #(println (str "Clicked: " deck-name " " (:id card)))]])]]])
 
 (defn app []
   [:div.my-app {:style {:display "flex" :flex-wrap "wrap"}}
-   (when-let [deck @(r/subscribe [:query-deck :splendor-deck])]
-     [field-component "Field" deck :splendor-deck])
-   (when-let [stack @(r/subscribe [:query-deck :splendor-deck])]
-     [stack-component "Stack" stack :player1])
-   (when-let [stack (reverse @(r/subscribe [:query-deck :splendor-deck]))]
-     [stack-component "Stack reverse" stack :player1])
-   (when-let [card (first @(r/subscribe [:query-deck :splendor-deck]))]
-     [card-component card #(println "Single card clicked")])
-   (when-let [deck @(r/subscribe [:query-deck :splendor-deck])]
-     [deck-component "Deck" deck :player1])
-   ;; - player1
-   (when-let [deck @(r/subscribe [:query-deck :player1])]
-     [field-component "Field" deck :splendor-deck])
-   (when-let [stack @(r/subscribe [:query-deck :player1])]
-     [stack-component "Stack" stack :player1])
-   (when-let [card (first @(r/subscribe [:query-deck :player1]))]
-     [card-component card #(println "Single card clicked")])
-   (when-let [deck @(r/subscribe [:query-deck :player1])]
-     [deck-component "Deck" deck :player1])
-   ;[action-component @(r/subscribe [:query-selected])]
-   ])
+   (if @(r/subscribe [:initialized?])
+     (let [splendor-deck @(r/subscribe [:query-deck-id :splendor-deck-id])]
+       [:div {:style {:display "flex" :flex-wrap "wrap"}}
+        [field-component "Multi Field" splendor-deck :splendor-deck]
+        [field-component "Multi Field reversed" (reverse splendor-deck) :splendor-deck]
+        [stack-component splendor-deck "Stack" :splendor-deck]
+        [stack-component (reverse splendor-deck) "Stack reversed" :splendor-deck]
+        [deck-component "Deck" splendor-deck :splendor-deck]
+        [deck-component "Deck reversed" (reverse splendor-deck) :splendor-deck]]))])
 
-;; rendering
+  ;; rendering
 
 
 (defn render []

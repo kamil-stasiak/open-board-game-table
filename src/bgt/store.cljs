@@ -1,7 +1,7 @@
 (ns bgt.store
   (:require [re-frame.core :as r]
             [bgt.utils :refer [drop-nth add-nth]]
-            [bgt.cards :refer [splendor-deck] ]))
+            [bgt.cards :as splendor :refer [splendor-deck]]))
 
 (def element
   {:active :back
@@ -20,17 +20,35 @@
  :initialize
  (fn [_ _]
    (js/console.log "Initialize fired!")
-   {:selected nil
+   {:initialized? true
+    :selected nil
     :message "init"
+    :cards {"id1" splendor/splendor-1
+            "id2" splendor/splendor-2
+            "id3" splendor/splendor-3}
     :decks {:player1 (list element element element element)
             :player2 (list element)
-            :splendor-deck splendor-deck}}))
+            :splendor-deck splendor-deck
+            :splendor-deck-id (list "id1" "id2" "id3")}}))
 
+(r/reg-sub
+ :initialized?
+ (fn [db [_]]
+   (:initialized? db)))
 
 (r/reg-sub
  :query-selected
  (fn [db [_]]
    (:selected db)))
+
+(r/reg-sub
+ :query-deck-id
+ (fn [db [_ deck-name]]
+   (map
+    (fn [card] (get-in db [:cards card]))
+    (get-in db [:decks deck-name]))
+   ))
+
 
 (r/reg-sub
  :query-deck
@@ -43,8 +61,7 @@
  :set-mode
  (fn [{:keys [db]} [_ mode]]
    (let [new-db (assoc db :mode mode)]
-     {:db new-db}))
- )
+     {:db new-db})))
 (defn flip-card-handler [{:keys [db]} [_ [deck item-id]]]
   (let [card (get-in db [:decks deck item-id])
         flipped-card (assoc card :active (toggle-side card))]
@@ -58,8 +75,7 @@
          toggled-card (assoc card :selected? (not (:selected? card)))
          new-db (assoc db :selected [deck idx])
          new-deck (assoc (vec deck1) idx toggled-card)
-         new-db2 (assoc-in new-db [:decks deck] new-deck)
-         ]
+         new-db2 (assoc-in new-db [:decks deck] new-deck)]
                                         ; (println "--->>> " new-db2)
      {:db new-db2})))
 
@@ -67,14 +83,12 @@
  :move-card
  (fn [{:keys [db]} [_ [player idx] to]]
    (println (str "Move from " [player idx] " to " to))
-   (let [
-         from-deck (get-in db [:decks player])
+   (let [from-deck (get-in db [:decks player])
          element (nth from-deck idx)
          new-from-deck (drop-nth idx from-deck)
          to-deck (get-in db [:decks to])
          new-to-deck (add-nth 0 element (vec to-deck))
          db1 (assoc-in db [:decks player] new-from-deck)
-         db2 (assoc-in db1 [:decks to] new-to-deck)
-         ]
+         db2 (assoc-in db1 [:decks to] new-to-deck)]
      (println db2) {:db db2})))
 
